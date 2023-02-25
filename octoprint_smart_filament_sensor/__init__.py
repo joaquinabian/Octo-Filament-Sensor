@@ -217,8 +217,9 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
     # Sensor callbacks
     # Send configured pause command to the printer to interrupt the print
-    def printer_change_filament(self):
+    def printer_change_filament(self, dummy):
         # Check if stop signal was already sent
+        _ = dummy
         if not self.send_code:
             self._logger.error("Motion sensor detected no movement")
             self._logger.info("Pause command: " + self.pause_command)
