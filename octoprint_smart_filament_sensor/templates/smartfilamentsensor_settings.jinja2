@@ -51,7 +51,7 @@
         <div class="control-group">
             <div class="controls" data-toggle="tooltip" title="{{ _('Enable or disble the sensor usage.') }}">
                 <label class="checkbox">
-                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.smartfilamentsensor.motion_sensor_enabled"> {{ _('Enable Sensor') }}
+                    <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.smartfilamentsensor.sensor_enabled"> {{ _('Enable Sensor') }}
                 </label>
             </div>
         </div>
@@ -75,7 +75,7 @@
             <div class="controls">
                 <div class="input-append" data-toggle="tooltip" title="{{ _('The distance that is allowed to be passed without chaning the sesnor status.') }}">
                     <!--<input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: distanceDetectionDistance">-->
-                    <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settingsViewModel.settings.plugins.smartfilamentsensor.motion_sensor_detection_distance">
+                    <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settingsViewModel.settings.plugins.smartfilamentsensor.sensor_detection_distance">
                     <span class="add-on">mm</span>
                 </div>
                 <span class="help-block"><small>GCode commands that are sent to the printer are interpreted. Don't choose this value too small, because it could make the detection too sensitive.</small></span>

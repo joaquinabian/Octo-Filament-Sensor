@@ -2,16 +2,16 @@ import RPi.GPIO as GPIO
 import threading
 import time
 
-class FilamentMotionSensorTimeoutDetection(threading.Thread):
+class TimeoutDetector(threading.Thread):
     used_pin = -1
     max_not_moving_time = -1
     keepRunning = True
 
     # Initialize FilamentMotionSensor
-    def __init__(self, threadID, threadName, pUsedPin, pMaxNotMovingTime, pLogger, pData, pCallback=None):
+    def __init__(self, tID, tName, pUsedPin, pMaxNotMovingTime, pLogger, pData, pCallback=None):
         threading.Thread.__init__(self)
-        self.threadID = threadID
-        self.name = threadName
+        self.threadID = tID
+        self.name = tName
         self.callback = pCallback
         self._logger = pLogger
         self._data = pData
@@ -34,8 +34,8 @@ class FilamentMotionSensorTimeoutDetection(threading.Thread):
         while self.keepRunning:
             timespan = (time.time() - self._data.last_motion_detected)
 
-            if (timespan > self.max_not_moving_time):
-                if(self.callback != None):
+            if timespan > self.max_not_moving_time:
+                if self.callback is not None:
                     self.callback()
 
             time.sleep(0.250)

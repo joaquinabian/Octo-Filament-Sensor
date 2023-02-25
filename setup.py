@@ -1,6 +1,6 @@
 # coding=utf-8
 
-########################################################################################################################
+###############################################################################################################
 # Do not forget to adjust the following variables to your own plugin.
 
 # The plugin's identifier, has to be unique
@@ -10,49 +10,53 @@ plugin_identifier = "smartfilamentsensor"
 # The plugin's python package, should be "octoprint_<plugin identifier>", has to be unique
 plugin_package = "octoprint_smart_filament_sensor"
 
-# The plugin's human readable name. Can be overwritten within OctoPrint's internal data via __plugin_name__ in the
-# plugin module
+# The plugin's human readable name. 
+# Can be overwritten within OctoPrint's internal data via __plugin_name__ in the plugin module
 plugin_name = "Octoprint-Smart-Filament-Sensor"
 
-# The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
+# The plugin's version. 
+# Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
 plugin_version = "1.2"
 
-# The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
-# module
+# The plugin's description. 
+# Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin module
 plugin_description = "A plugin to directly add Smart Filament Sensors like BigTreeTech Smart Filament Sensor to Octoprint."
 
-# The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
+# The plugin's author. 
+# Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
 plugin_author = "Royrdan"
 
 # The plugin's author's mail address.
 plugin_author_email = "transperancymedia@gmail.com"
 
-# The plugin's homepage URL. Can be overwritten within OctoPrint's internal data via __plugin_url__ in the plugin module
+# The plugin's homepage URL. 
+# Can be overwritten within OctoPrint's internal data via __plugin_url__ in the plugin module
 plugin_url = "https://github.com/royrdan/Octoprint-Smart-Filament-Sensor"
 
-# The plugin's license. Can be overwritten within OctoPrint's internal data via __plugin_license__ in the plugin module
+# The plugin's license. 
+# Can be overwritten within OctoPrint's internal data via __plugin_license__ in the plugin module
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
 plugin_requires = ['RPi.GPIO']
 
-# --------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------
 # More advanced options that you usually shouldn't have to touch follow after this point
-# --------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------
 
-# Additional package data to install for this plugin. The subfolders "templates", "static" and "translations" will
-# already be installed automatically if they exist.
+# Additional package data to install for this plugin. 
+# The subfolders "templates", "static" and "translations" will be installed automatically if they exist.
 plugin_additional_data = []
 
-# Any additional python packages you need to install with your plugin that are not contains in <plugin_package>.*
+# Any additional python packages you need to install with your plugin that are not contained in <plugin_package>.*
 plugin_addtional_packages = []
 
 # Any python packages within <plugin_package>.* you do NOT want to install with your plugin
 plugin_ignored_packages = []
 
-# Additional parameters for the call to setuptools.setup. If your plugin wants to register additional entry points,
-# define dependency links or other things like that, this is the place to go. Will be merged recursively with the
-# default setup parameters as provided by octoprint_setuptools.create_plugin_setup_parameters using
+# Additional parameters for the call to setuptools.setup. 
+# If your plugin wants to register additional entry points, define dependency links or other things like that, this is the place to go. 
+# Will be merged recursively with the default setup parameters as provided by octoprint_setuptools.create_plugin_setup_parameters using
 # octoprint.util.dict_merge.
 #
 # Example:
@@ -60,7 +64,7 @@ plugin_ignored_packages = []
 #     additional_setup_parameters = {"dependency_links": ["https://github.com/someUser/someRepo/archive/master.zip#egg=someDependency-dev"]}
 additional_setup_parameters = {}
 
-########################################################################################################################
+#############################################################################################################
 
 
 try:
