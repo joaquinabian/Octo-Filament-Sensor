@@ -6,7 +6,7 @@
 ######################
 ##
 ##  - Run this script on the OctoPi
-##  - python3 sensor_connection_check.py
+##  - python3 connection_check.py
 ##  - To save some filament you can unload the filament
 ##      before and move it manually in the sensor
 

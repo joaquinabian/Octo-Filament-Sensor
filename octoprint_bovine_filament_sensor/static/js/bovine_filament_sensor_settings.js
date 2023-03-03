@@ -1,8 +1,14 @@
-$(function(){
-    function SmartFilamentSensorSettingsViewModel(parameters){
+/*
+ * View model for OctoPrint-Bovine_filament_sensor
+ *
+ * Author: joaquin abian
+ * License: AGPLv3
+ */
+$(function() {
+    function Bovine_filament_sensorSettingsViewModel(parameters) {
         var self = this;
 
-        self.settingsViewModel = parameters[0];
+self.settingsViewModel = parameters[0];
         self.printerStateViewModel = parameters[1];
         self.connectionTestDialog = undefined;
 
@@ -12,7 +18,7 @@ $(function(){
         self.isConnectionTestRunning = ko.observable(false);
 
         self.onStartup = function() {
-            self.connectionTestDialog = $("#settings_plugin_smartfilamentsensor_connectiontest");
+            self.connectionTestDialog = $("#settings_plugin_bovine_filament_sensor_connectiontest");
         };
         
         self.showConnectionTest = function() {
@@ -22,7 +28,7 @@ $(function(){
         };
 
         self.onDataUpdaterPluginMessage = function(plugin, data){
-            if(plugin !== "smartfilamentsensor"){
+            if(plugin !== "bovine_filament_sensor"){
                 return;
             }
             
@@ -45,7 +51,7 @@ $(function(){
 
         self.startConnectionTest = function(){
             $.ajax({
-                url: API_BASEURL + "plugin/smartfilamentsensor",
+                url: API_BASEURL + "plugin/bovine_filament_sensor",
                 type: "POST",
                 dataType: "json",
                 data: JSON.stringify({ "command": "startConnectionTest" }),
@@ -56,7 +62,7 @@ $(function(){
 
         self.stopConnectionTest = function(){
             $.ajax({
-                url: API_BASEURL + "plugin/smartfilamentsensor",
+                url: API_BASEURL + "plugin/bovine_filament_sensor",
                 type: "POST",
                 dataType: "json",
                 data: JSON.stringify({ "command": "stopConnectionTest" }),
@@ -71,9 +77,9 @@ $(function(){
     }
 
     OCTOPRINT_VIEWMODELS.push({
-        construct: SmartFilamentSensorSettingsViewModel,
-        name: "smartFilamentSensorSettingsViewModel",
+        construct: Bovine_filament_sensorSettingsViewModel,
+        name: "Bovine_filament_sensorSettingsViewModel",
         dependencies: ["settingsViewModel", "printerStateViewModel"],
-        elements: ["#settings_plugin_smartfilamentsensor"]
+        elements: ["#settings_plugin_bovine_filament_sensor"]
     });
 });

@@ -3,19 +3,14 @@ import threading
 import time
 
 class TimeoutDetector(threading.Thread):
-    used_pin = -1
-    max_not_moving_time = -1
-    keepRunning = True
-
-    # Initialize FilamentMotionSensor
     def __init__(self, tID, tName, pUsedPin, pMaxNotMovingTime, pLogger, pData, pCallback=None):
+        """Initialize FilamentTimeoutDetector"""
         threading.Thread.__init__(self)
         self.threadID = tID
         self.name = tName
         self.callback = pCallback
         self._logger = pLogger
         self._data = pData
-
         self.used_pin = pUsedPin
         self.max_not_moving_time = pMaxNotMovingTime
         self._data.last_motion_detected = time.time()
@@ -24,8 +19,8 @@ class TimeoutDetector(threading.Thread):
         # Remove event, if already an event was set
         try:
             GPIO.remove_event_detect(self.used_pin)
-        except:
-            self._logger.warn("Pin " + str(pUsedPin) + " not used before")
+        except ValueError:
+            self._logger.warn("Pin %s not used before" % pUsedPin)
             
         GPIO.add_event_detect(self.used_pin, GPIO.BOTH, callback=self.motion)
 

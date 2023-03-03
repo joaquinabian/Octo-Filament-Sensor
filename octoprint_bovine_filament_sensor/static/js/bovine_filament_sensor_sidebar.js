@@ -1,9 +1,9 @@
 $(function(){
-    function SmartFilamentSensorSidebarViewModel(parameters){
+    function Bovine_filament_sensorSidebarViewModel(parameters){
         var self = this;
 
         self.settingsViewModel = parameters[0];
-        //self.smartfilamentsensorSettings = self.settingsViewModel.settings.plugins.smartfilamentsensor;
+        //self.bovine_filament_sensorSettings = self.settingsViewModel.settings.plugins.bovine_filament_sensor;
 
         self.isSensorEnabled = ko.observable(undefined);
         self.remainingDistance = ko.observable(undefined);
@@ -13,7 +13,7 @@ $(function(){
 
         //Returns the value in Yes/No if the Sensor is enabled 
         self.getSensorEnabledString = function(){
-            var sensorEnabled = self.settingsViewModel.settings.plugins.smartfilamentsensor.motion_sensor_enabled();
+            var sensorEnabled = self.settingsViewModel.settings.plugins.bovine_filament_sensor.motion_sensor_enabled();
 
             if(sensorEnabled){
                 return "Yes";
@@ -25,7 +25,7 @@ $(function(){
 
         // Returns the value of detection_method as string
         self.getDetectionMethodString = function(){
-            var detectionMethod = self.settingsViewModel.settings.plugins.smartfilamentsensor.detection_method();
+            var detectionMethod = self.settingsViewModel.settings.plugins.bovine_filament_sensor.detection_method();
 
             if(detectionMethod == 0){
                 return "Timeout Detection";
@@ -36,7 +36,7 @@ $(function(){
         };
 
         self.getDetectionMethodBoolean = ko.pureComputed(function(){
-            var detectionMethod = self.settingsViewModel.settings.plugins.smartfilamentsensor.detection_method();
+            var detectionMethod = self.settingsViewModel.settings.plugins.bovine_filament_sensor.detection_method();
 
             if(detectionMethod == 0){
                 return false;
@@ -47,7 +47,7 @@ $(function(){
         });
 
         self.onDataUpdaterPluginMessage = function(plugin, data){
-            if(plugin !== "smartfilamentsensor"){
+            if(plugin !== "bovine_filament_sensor"){
                 return;
             }
             
@@ -72,7 +72,7 @@ $(function(){
 
         self.startConnectionTest = function(){
             $.ajax({
-                url: API_BASEURL + "plugin/smartfilamentsensor",
+                url: API_BASEURL + "plugin/bovine_filament_sensor",
                 type: "POST",
                 dataType: "json",
                 data: JSON.stringify({ "command": "startConnectionTest" }),
@@ -83,7 +83,7 @@ $(function(){
 
         self.stopConnectionTest = function(){
             $.ajax({
-                url: API_BASEURL + "plugin/smartfilamentsensor",
+                url: API_BASEURL + "plugin/bovine_filament_sensor",
                 type: "POST",
                 dataType: "json",
                 data: JSON.stringify({ "command": "stopConnectionTest" }),
@@ -98,9 +98,9 @@ $(function(){
     }
 
     OCTOPRINT_VIEWMODELS.push({
-        construct: SmartFilamentSensorSidebarViewModel,
+        construct: Bovine_filament_sensorSidebarViewModel,
         name: "smartFilamentSensorSidebarViewModel",
         dependencies: ["settingsViewModel"],
-        elements: ["#sidebar_plugin_smartfilamentsensor"]
+        elements: ["#sidebar_plugin_bovine_filament_sensor"]
     });
 });
