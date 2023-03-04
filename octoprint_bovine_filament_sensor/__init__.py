@@ -108,8 +108,7 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
     def load_bovine_filament_sensor_data(self):
         self._logger.info("loading bovine filament sensor data")
         self._data.remaining_distance = self.sensor_detection_distance    
-    
-    
+
     def get_settings_defaults(self):
         """SettingsPlugin mixin.
         Put your plugin's default settings here.
@@ -325,7 +324,7 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
 
     def update_ui(self):
         self._plugin_manager.send_plugin_message(self._identifier,
-                                                 self._data.toJSON())
+                                                 self._data.to_json())
 
     def connection_test_callback(self, pMoving=False):
         self._data.filament_moving = pMoving
@@ -401,8 +400,8 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
             return flask.make_response("Stopped connection test", 204)
         else:
             return flask.make_response("Not found", 404)
-    
- 
+
+    # noinspection PyUnusedLocal
     def distance_detection(self, comm_instance, phase, cmd, cmd_type, gcode,
                            *args, **kwargs):
         """Hook to interpret GCode commands sent to the printer.
@@ -461,7 +460,7 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
                 "displayName": "Bovine_filament_sensor Plugin",
                 "displayVersion": self._plugin_version,
 
-                # version check: github repository
+                # version check: GitHub repository
                 "type": "github_release",
                 "user": "joaquinabian",
                 "repo": "OctoPrint-Bovine_filament_sensor",
@@ -475,8 +474,7 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
 
 # If you want your plugin to be registered within OctoPrint under a different name 
 __plugin_name__ = "Bovine_filament_sensor"
-
-__plugin_pythoncompat__ = ">=3,<4"  # Only Python 3
+__plugin_pythoncompat__ = ">=3,<4"
 
 def __plugin_load__():
     global __plugin_implementation__

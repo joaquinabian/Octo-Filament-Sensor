@@ -82,5 +82,5 @@ class DetectionData(object):
         self._last_motion_detected = ""
         self._filament_moving = False
 
-    def toJSON(self):
-         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
