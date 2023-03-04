@@ -35,17 +35,16 @@ def main():
         while True:
             timespan = (time.time() - lastMotion)
 
-            if (timespan > max_not_moving_time):
+            if timespan > max_not_moving_time:
                 print("No motion detected")
             else:
                 print("Moving")
 
             time.sleep(0.250)
 
-        GPIO.remove_event_detect(USED_PIN)
     except KeyboardInterrupt:
+        GPIO.remove_event_detect(USED_PIN)
         print("Done")
-        pass
 
 
 def motion(pPin):
