@@ -15,7 +15,7 @@ import time
 
 # CONST
 # Configure your GPIO pin
-USED_PIN = 11
+USED_PIN = 24
 GPIO.setmode(GPIO.BOARD)
 # GPIO.setmode(GPIO.BCM)
 # Time in seconds
