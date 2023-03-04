@@ -13,11 +13,11 @@
 import RPi.GPIO as GPIO
 import time
 
-#CONST
+# CONST
 # Configure your GPIO pin
 USED_PIN = 11
 GPIO.setmode(GPIO.BOARD)
-#GPIO.setmode(GPIO.BCM)
+# GPIO.setmode(GPIO.BCM)
 # Time in seconds
 max_not_moving_time = 2
 # Set up the GPIO channels - one input and one output
@@ -27,29 +27,31 @@ lastValue = GPIO.input(USED_PIN)
 # Get current time in seconds
 lastMotion = time.time()
 
+
 def main():
-	try: 
-		GPIO.add_event_detect(USED_PIN, GPIO.BOTH, callback=motion)
+    try:
+        GPIO.add_event_detect(USED_PIN, GPIO.BOTH, callback=motion)
 
-		while True:
-			timespan = (time.time() - lastMotion)
+        while True:
+            timespan = (time.time() - lastMotion)
 
-			if (timespan > max_not_moving_time):
-				print("No motion detected")
-			else:
-				print ("Moving")
+            if (timespan > max_not_moving_time):
+                print("No motion detected")
+            else:
+                print("Moving")
 
-			time.sleep(0.250)
-		
-		GPIO.remove_event_detect(USED_PIN)
-	except KeyboardInterrupt:
-		print ("Done")
-		pass
+            time.sleep(0.250)
+
+        GPIO.remove_event_detect(USED_PIN)
+    except KeyboardInterrupt:
+        print("Done")
+        pass
 
 
 def motion(pPin):
-	global lastMotion
-	lastMotion = time.time()
-	print("Motion detected at " + str(lastMotion))
+    global lastMotion
+    lastMotion = time.time()
+    print("Motion detected at " + str(lastMotion))
+
 
 main()

@@ -4,7 +4,7 @@ import time
 
 class TimeoutDetector(threading.Thread):
     def __init__(self, tID, tName, pUsedPin, pMaxNotMovingTime, pLogger, pData, pCallback=None):
-        """Initialize FilamentTimeoutDetector"""
+        """Initialize Filament TimeoutDetector"""
         threading.Thread.__init__(self)
         self.threadID = tID
         self.name = tName
