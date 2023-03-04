@@ -318,7 +318,7 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
                 # Stops pausing when the CPU gets hung up.
                 timedelta = datetime.now() - self.last_movement_time
                 if timedelta.total_seconds() > 10:
-                    self.printer_change_filament()
+                    self.printer_change_filament(None)
                 else:
                     self._logger.debug(
                         "Ignored pause command due to 5 second rule")
