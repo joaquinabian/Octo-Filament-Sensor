@@ -205,8 +205,8 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
                     pCallback=self.printer_change_filament
                 )
                 self.sensor_thread.start()
-                self._logger.info("Motion sensor started: Timeout detection"
-                                          )
+                self._logger.info("Motion sensor started: Timeout detection")
+
             self.send_code = False
             self._data.filament_moving = True
 
