@@ -8,7 +8,7 @@ $(function() {
     function Bovine_filament_sensorSettingsViewModel(parameters) {
         var self = this;
 
-self.settingsViewModel = parameters[0];
+        self.settingsViewModel = parameters[0];
         self.printerStateViewModel = parameters[1];
         self.connectionTestDialog = undefined;
 

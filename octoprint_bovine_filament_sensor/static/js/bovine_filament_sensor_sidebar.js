@@ -13,7 +13,7 @@ $(function(){
 
         //Returns the value in Yes/No if the Sensor is enabled 
         self.getSensorEnabledString = function(){
-            var sensorEnabled = self.settingsViewModel.settings.plugins.bovine_filament_sensor.motion_sensor_enabled();
+            var sensorEnabled = self.settingsViewModel.settings.plugins.bovine_filament_sensor.sensor_enabled();
 
             if(sensorEnabled){
                 return "Yes";
