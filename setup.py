@@ -9,7 +9,7 @@ plugin_identifier = "bovine_filament_sensor"
 # The plugin's python package, should be "octoprint_<plugin identifier>", has to be unique
 plugin_package = "octoprint_bovine_filament_sensor"
 
-# The plugin's human readable name. Can be overwritten within OctoPrint's internal data via __plugin_name__ in the
+# The plugin's human-readable name. Can be overwritten within OctoPrint's internal data via __plugin_name__ in the
 # plugin module
 plugin_name = "OctoPrint-Bovine_filament_sensor"
 
@@ -69,7 +69,7 @@ from setuptools import setup
 
 try:
     import octoprint_setuptools
-except:
+except ImportError:
     print(
         "Could not import OctoPrint's setuptools, are you sure you are running that under "
         "the same python installation that OctoPrint is installed under?"
