@@ -28,10 +28,10 @@ $(function(){
             var detectionMethod = self.settingsViewModel.settings.plugins.bovine_filament_sensor.detection_method();
 
             if(detectionMethod == 0){
-                return "Timeout Detection";
+                return "Timeout";
             }
             else if(detectionMethod == 1){
-                return "Distance Detection";
+                return "Distance";
             }
         };
 
@@ -53,7 +53,7 @@ $(function(){
             
             var message = JSON.parse(data);
             self.remainingDistance( Math.round(message["_remaining_distance"]) );
-            self.lastMotionDetected((new Date((message["_last_motion_detected"] * 1000))).toString());
+            self.lastMotionDetected((new Date((message["_last_motion_detected"] * 1000))).toLocaleString());
 
             if(message["_filament_moving"] == true){
                 self.isFilamentMoving("Yes");
