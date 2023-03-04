@@ -99,7 +99,7 @@ $(function(){
 
     OCTOPRINT_VIEWMODELS.push({
         construct: Bovine_filament_sensorSidebarViewModel,
-        name: "smartFilamentSensorSidebarViewModel",
+        name: "Bovine_filament_sensorSidebarViewModel",
         dependencies: ["settingsViewModel"],
         elements: ["#sidebar_plugin_bovine_filament_sensor"]
     });
