@@ -40,6 +40,7 @@ class TimeoutDetector(threading.Thread):
     # Eventhandler for GPIO filament sensor signal
     # The new state of the GPIO pin is read and determinated.
     # It is checked if motion is detected and printed to the console.
+    # noinspection PyUnusedLocal
     def motion(self, pPin):
         self._data.last_motion_detected = time.time()
         self.callback(True)
