@@ -21,6 +21,7 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
         self.START_DISTANCE_OFFSET = 7
         self.send_code = False
         self.sensor_thread = None
+        self._data = None
 
     def initialize(self):
         self._logger.info("Q-initialize")
@@ -36,7 +37,6 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
         GPIO.setwarnings(False)     # Disable GPIO warnings
 
         self._setup_sensor()
-
 
     @property
     def sensor_pin(self):
@@ -106,7 +106,7 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
         self.load_bovine_filament_sensor_data()
     
     def load_bovine_filament_sensor_data(self):
-        self._logger.info("Q-load_smart_filament_sensor_data")
+        self._logger.info("loading bovine filament sensor data")
         self._data.remaining_distance = self.sensor_detection_distance    
     
     
@@ -147,7 +147,6 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
         return dict(js=["js/bovine_filament_sensor_sidebar.js",
                         "js/bovine_filament_sensor_settings.js"])
 
-
     ####  Sensor methods  ###
 
     def stop_connection_test(self):
@@ -160,7 +159,6 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
         else:
             self._logger.info("Connection test is not running")
 
-    
     def start_connection_test(self):
         """Connection tests"""
         CONNECTION_TEST_TIME = 2
@@ -173,7 +171,6 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
             self.sensor_thread.start()
             self._data.connection_test_running = True
             self._logger.info("Connection test started")
-
 
     def sensor_start(self):
         """Starts the motion sensor if the sensors are enabled."""
@@ -224,9 +221,9 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
     def ring_bell(self):
         GPIO.setup(21, GPIO.OUT)
         for n in range(25):
-            GPIO.output(21, True)  ##Turn OFF LED
+            GPIO.output(21, True)  # Turn OFF LED
             sleep(2)
-            GPIO.output(21, False)  ##Turn ON LED
+            GPIO.output(21, False)  # Turn ON LED
             sleep(1)
 
     # Sensor callbacks
@@ -306,9 +303,7 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
                 if deltaDistance > self.sensor_detection_distance:
                     # Calculate the deltaDistance modulo the sensor_detection_distance
                     # Sometimes the polling of M114 is inaccurate so that with the next poll
-                    # very high distances are put back followed by zero distance changes
-
-                    # deltaDistance=deltaDistance / self.sensor_detection_distance REMAINDER
+                    # very high distances are put back followed by zero distance changes.
                     deltaDistance = deltaDistance % self.sensor_detection_distance
 
                 current_remaining = self._data.remaining_distance - deltaDistance
