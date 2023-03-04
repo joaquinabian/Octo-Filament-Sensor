@@ -3,6 +3,10 @@
 [OctoPrint](http://octoprint.org/) plugin that lets integrate a Filament Sensor
 like the one described by [Makers Mashups](https://youtu.be/v2mQ4X1J3cs) into your filament path.
 
+The version I built:
+
+![My sensor parametric design (OpenScad)](./extras/pics/filament_sensor.png)
+
 The sensor sends a toggling signal to the RPi through a GPIO pin.
 The pluging monitor this input and produces several responses in case 
 it doesn't sense filament movement.
