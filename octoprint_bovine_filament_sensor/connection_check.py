@@ -46,7 +46,7 @@ def main():
         GPIO.remove_event_detect(USED_PIN)
         print("Done")
 
-
+# noinspection PyUnusedLocal
 def motion(pPin):
     global lastMotion
     lastMotion = time.time()
