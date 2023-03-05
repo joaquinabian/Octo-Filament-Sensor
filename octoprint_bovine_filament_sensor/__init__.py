@@ -25,7 +25,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
 
     def initialize(self):
         self._logger.info("Q-initialize")
-        self._data = DetectionData(self.sensor_detection_distance, True,
+        self._data = DetectionData(self.detection_distance, True,
                                    self.update_ui)
 
     def on_after_startup(self):
@@ -64,13 +64,13 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
     
     # Distance detection
     @property
-    def sensor_detection_distance(self):
-        return int(self._settings.get(["sensor_detection_distance"]))
+    def detection_distance(self):
+        return int(self._settings.get(["detection_distance"]))
 
     # Timeout detection
     @property
-    def sensor_max_not_moving(self):
-        return int(self._settings.get(["sensor_max_not_moving"]))
+    def sensor_max_idle(self):
+        return int(self._settings.get(["sensor_max_idle"]))
 
     # Initialization methods
     def _setup_sensor(self):
@@ -103,15 +103,15 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
         self._data.filament_moving = False
         self.sensor_thread = None
 
-        self.load_bovine_filament_sensor_data()
+        self.load_sensor_data()
     
-    def load_bovine_filament_sensor_data(self):
+    def load_sensor_data(self):
         self._logger.info("loading bovine filament sensor data")
-        self._data.remaining_distance = self.sensor_detection_distance    
+        self._data.remaining_distance = self.detection_distance
 
     def get_settings_defaults(self):
         """SettingsPlugin mixin.
-        Put your plugin's default settings here.
+        Plugin's default settings.
         """
         self._logger.info("Q-get_settings_defaults")
         return dict(
@@ -123,11 +123,11 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
 
             # Distance detection
             # Recommended detection distance from Marlin would be 7
-            sensor_detection_distance=15,
+            detection_distance=15,
 
             # Timeout detection
             # Maximum time no movement is detected - default continously
-            sensor_max_not_moving=45,
+            sensor_max_idle=45,
 
             pause_command="M600",
         )
@@ -141,13 +141,12 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
 
     def get_assets(self):
         """AssetPlugin mixin.
-        Define your plugin's asset files to automatically include 
-        in the core UI.
+        Plugin's asset files to be automatically included in the core UI.
         """
         return dict(js=["js/bovine_filament_sensor_sidebar.js",
                         "js/bovine_filament_sensor_settings.js"])
 
-    ####  Sensor methods  ###
+    # ---------- Sensor methods  ------------#
 
     def stop_connection_test(self):
         """Connection tests"""
@@ -157,7 +156,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
             self._data.connection_test_running = False
             self._logger.info("Connection test stopped")
         else:
-            self._logger.info("Connection test is not running")
+            self._logger.info("Connection test not running")
 
     def start_connection_test(self):
         """Connection tests"""
@@ -182,26 +181,23 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
                 self._logger.debug("GPIO mode: Board Mode")
             else:
                 self._logger.debug("GPIO mode: BCM Mode")
-            self._logger.debug("GPIO pin: " + str(self.sensor_pin))
+            self._logger.debug("GPIO pin: %s" % self.sensor_pin)
 
             # Distance detection
             if self.detection_method == 1:
-                self._logger.info("Motion sensor started: Distance detection")
-                self._logger.debug("Detection Mode: Distance detection")
-                self._logger.debug(
-                    "Distance: %s" % self.sensor_detection_distance)
+                self._logger.debug("Detection Mode: Distance")
+                self._logger.debug("Distance: %s" % self.detection_distance)
 
             # Timeout detection
             elif self.detection_method == 0 and self.sensor_thread is None:
-                self._logger.debug("Detection Mode: Timeout detection")
-                self._logger.debug(
-                    "Timeout: %s" % self.sensor_max_not_moving)
+                self._logger.debug("Detection Mode: Timeout")
+                self._logger.debug("Timeout: %s" % self.sensor_max_idle)
 
                 # Start Timeout_Detection thread
                 self.sensor_thread = TimeoutDetector(
-                    1, "SensorTimeoutDetectionThread",
+                    1, "TimeoutDetectionThread",
                     self.sensor_pin,
-                    self.sensor_max_not_moving,
+                    self.sensor_max_idle,
                     self._logger, self._data,
                     pCallback=self.printer_change_filament
                 )
@@ -219,17 +215,19 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
             self._logger.info("Motion sensor stopped")
 
     def ring_bell(self):
-        GPIO.setup(21, GPIO.OUT)
+        PIN=21
+        GPIO.setup(PIN, GPIO.OUT)
         for n in range(25):
-            GPIO.output(21, True)  # Turn OFF LED
+            GPIO.output(PIN, True)  # Turn OFF LED
             sleep(2)
-            GPIO.output(21, False)  # Turn ON LED
+            GPIO.output(PIN, False)  # Turn ON LED
             sleep(1)
 
     # Sensor callbacks
+    # noinspection PyUnusedLocal
     def printer_change_filament(self, dummy):
-        """Send configured pause command to the printer to interrupt the print"""
-        _ = dummy
+        """Send configured pause command to the printer to interrupt the print
+        """
         # Check if stop signal was already sent
         if not self.send_code:
             self._logger.error("Motion sensor detected no movement")
@@ -244,13 +242,13 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
             self.lastE = -1  # Set to -1, so it ignores the first test then continues
 
     # Reset the distance, if the remaining distance is smaller than the new value
+    # noinspection PyUnusedLocal
     def reset_distance(self, pPin):
-        _ = pPin
         self._logger.debug("Motion sensor detected movement")
         self.send_code = False
         self.last_movement_time = datetime.now()
-        if self._data.remaining_distance < self.sensor_detection_distance:
-            self._data.remaining_distance = self.sensor_detection_distance
+        if self._data.remaining_distance < self.detection_distance:
+            self._data.remaining_distance = self.detection_distance
             self._data.filament_moving = True
 
     def init_distance_detection(self):
@@ -264,7 +262,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
         START_DISTANCE_OFFSET is used for the (re-)start sequence.
 
         """
-        self._data.remaining_distance = self.sensor_detection_distance + \
+        self._data.remaining_distance = self.detection_distance + \
                                         self.START_DISTANCE_OFFSET
 
     def calc_distance(self, pE):
@@ -300,11 +298,11 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
                     self._logger.debug(
                         "Relative Extrusion = %s" % rounded_delta)
 
-                if deltaDistance > self.sensor_detection_distance:
-                    # Calculate the deltaDistance modulo the sensor_detection_distance
+                if deltaDistance > self.detection_distance:
+                    # Calculate the deltaDistance modulo the detection_distance
                     # Sometimes the polling of M114 is inaccurate so that with the next poll
                     # very high distances are put back followed by zero distance changes.
-                    deltaDistance = deltaDistance % self.sensor_detection_distance
+                    deltaDistance = deltaDistance % self.detection_distance
 
                 current_remaining = self._data.remaining_distance - deltaDistance
 
@@ -390,8 +388,9 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
             stopConnectionTest=[]
         )
 
+    # noinspection PyUnusedLocal
     def on_api_command(self, command, data):
-        _ = data
+        """"""
         self._logger.info("API: " + command)
         if command == "startConnectionTest":
             self.start_connection_test()
@@ -412,7 +411,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
         
         # Only performed if distance detection is used
         if self.detection_method == 1 and self.sensor_enabled:
-            # G0/G1 for linear moves and G2/G3 for circle movements
+            # G0/G1 for linear moves, G2/G3 for circle movements
             if gcode in ["G0", "G1", "G2", "G3"]:
                 commands = cmd.split(" ")
 
@@ -450,8 +449,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
 
     def get_update_information(self):
         """Software Update Hook.
-        Define the configuration for your plugin to use with the
-        Software Update Plugin here.
+        Plugin configuration for the Software Update Plugin.
         For details, see:
         https://docs.octoprint.org/en/master/bundledplugins/softwareupdate.html
         """
