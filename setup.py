@@ -40,11 +40,11 @@ plugin_license = "AGPLv3"
 # Any additional requirements besides OctoPrint should be listed here
 plugin_requires = []
 
-### ----------------------------------------------------------------------------
-### More advanced options that you usually shouldn't have to touch:
-### ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# More advanced options that you usually shouldn't have to touch:
+# ----------------------------------------------------------------------------
 
-# Additional package data to install for this plugin.
+# - Additional package data to install for this plugin.
 # The subfolders "templates", "static" and "translations" will already be
 # installed automatically if they exist.
 # Note that if you add something here you'll also need to update MANIFEST.in to
@@ -54,14 +54,14 @@ plugin_requires = []
 # http://stackoverflow.com/a/14159430/2028598
 plugin_additional_data = []
 
-# Additional python packages you need to install with your plugin that are not
+# - Additional python packages you need to install with your plugin that are not
 # contained in <plugin_package>.*
 plugin_additional_packages = []
 
 # Python packages within <plugin_package>.* you do NOT want to install with your plugin
 plugin_ignored_packages = []
 
-# Additional parameters for the call to setuptools.setup.
+# - Additional parameters for the call to setuptools.setup.
 # If your plugin wants to register additional entry points, define dependency
 # links or other things like that, this is the place to go.
 # Will be merged recursively with the default setup parameters as provided by
