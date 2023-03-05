@@ -10,8 +10,8 @@ from octoprint_bovine_filament_sensor.timeout_detection import TimeoutDetector
 from octoprint_bovine_filament_sensor.data import DetectionData
 
 
-class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlugin,
-                                   SettingsPlugin, AssetPlugin, SimpleApiPlugin):
+class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlugin,
+                                 SettingsPlugin, AssetPlugin, SimpleApiPlugin):
 
     def __init__(self):
         self.print_started = False
@@ -142,7 +142,8 @@ class Bovine_filament_sensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePl
     def get_assets(self):
         """AssetPlugin mixin.
         Define your plugin's asset files to automatically include 
-        in the core UI here."""
+        in the core UI.
+        """
         return dict(js=["js/bovine_filament_sensor_sidebar.js",
                         "js/bovine_filament_sensor_settings.js"])
 
@@ -478,7 +479,7 @@ __plugin_pythoncompat__ = ">=3,<4"
 
 def __plugin_load__():
     global __plugin_implementation__
-    __plugin_implementation__ = Bovine_filament_sensorPlugin()
+    __plugin_implementation__ = BovineFilamentSensorPlugin()
 
     global __plugin_hooks__
     __plugin_hooks__ = {
