@@ -7,7 +7,7 @@ plugin_identifier = "bovine_filament_sensor"
 
 # The plugin's python package
 # Should be "octoprint_<plugin identifier>", has to be unique
-plugin_package = "octoprint_bovine_filament_sensor"
+plugin_package = "bovine_filament_sensor"
 
 # The plugin's human-readable name.
 # Overwritable via __plugin_name__ in the plugin module
