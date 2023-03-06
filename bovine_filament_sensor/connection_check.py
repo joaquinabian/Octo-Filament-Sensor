@@ -1,36 +1,34 @@
 #!/usr/bin/python3
-######################
-##                  ##
-##  Instructions    ##
-##                  ##
-######################
-##
-##  - Run this script on the OctoPi
-##  - python3 connection_check.py
-##  - To save some filament you can unload the filament
-##      before and move it manually in the sensor
+
+# ----------------------------- #
+#          Instructions         #
+# ----------------------------- #
+#
+#  - Run this script on the OctoPi
+#  - > python3 connection_check.py
+#  - To save some filament you can unload the
+#    filament before and move it manually in the sensor
+
 
 import RPi.GPIO as GPIO
 import time
 
-# CONST
 # Configure your GPIO pin
-USED_PIN = 24
-# GPIO.setmode(GPIO.BOARD)
-GPIO.setmode(GPIO.BCM)
+PIN = 24
+GPIO.setmode(GPIO.BCM)   # GPIO.BCM/GPIO.BOARD
+GPIO.setup(PIN, GPIO.IN)
+
 # Time in seconds
 max_not_moving_time = 2
-# Set up the GPIO channels - one input and one output
-GPIO.setup(USED_PIN, GPIO.IN)
 
-lastValue = GPIO.input(USED_PIN)
+lastValue = GPIO.input(PIN)
 # Get current time in seconds
 lastMotion = time.time()
 
 
 def main():
     try:
-        GPIO.add_event_detect(USED_PIN, GPIO.BOTH, callback=motion)
+        GPIO.add_event_detect(PIN, GPIO.BOTH, callback=motion)
 
         while True:
             timespan = (time.time() - lastMotion)
@@ -43,11 +41,11 @@ def main():
             time.sleep(0.250)
 
     except KeyboardInterrupt:
-        GPIO.remove_event_detect(USED_PIN)
+        GPIO.remove_event_detect(PIN)
         print("Done")
 
 # noinspection PyUnusedLocal
-def motion(pPin):
+def motion(pin):
     global lastMotion
     lastMotion = time.time()
     print("Motion detected at " + str(lastMotion))
