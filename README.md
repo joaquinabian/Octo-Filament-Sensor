@@ -1,4 +1,4 @@
-# OctoPrint-Bovine_filament_sensor
+# OctoPrint Bovine Filament Sensor
 
 [OctoPrint](http://octoprint.org/) plugin that lets integrate a Filament Sensor
 like the one described by [Makers Mashups](https://youtu.be/v2mQ4X1J3cs) into your filament path.
@@ -10,7 +10,7 @@ The version I built:
 The sensor sends a toggling signal to the RPi through a GPIO pin.
 The pluging monitor this input and produces several responses in case 
 it doesn't sense filament movement.
-Response includes remote activation of a real cow-bell-based alarm in the same wifi network.
+Response includes remote activation of a real cow-bell-based alarm in the same Wi-Fi network.
 
 This is a fork of Octoprint-Smart-Filament-Sensor from Royrdan.  
 The following is mostly a reproduction of Royrdan README, but changes are being added as long as development continues.
@@ -38,14 +38,16 @@ This plugin can use the GPIO.BOARD or GPIO.BCM numbering scheme.
 
 ## Installation
 
-The OctoPrint-Bovine_filament_sensor plugin is not yet functional.
+The OctoPrint Bovine Filament Sensor plugin is not yet fully functional.
 
 ## Configuration
 ### GPIO Pin
-* Choose any free GPIO pin you for data usage, but I would recommend to use GPIO pins without special functionalities like e.g. I2C
+* Choose any free GPIO pin you for data usage, but I would recommend to use GPIO pins without special functionalities like e.g. I2C.  
+  I use GPIO24 which is next to a ground pin and in front of a 3V3 pin.  
+  Please check the [documentation](https://www.raspberrypi.org/documentation/usage/gpio/) of your Raspberry Pi version/model. 
 * Run the sensor only on 3.3V, because GPIO pins don't like 5V for a long time
-* In [BigTreeTech SmartFilamentSensor Manual](https://github.com/bigtreetech/smart-filament-detection-module/tree/master/manual) on page 12 you can find the functionality of the pins. Please ensure that there is no undocumented twist in your cable
-* My recommended GPIO pins: 11, 13, 15, 17 (such without any special usage). Please check the [documentation](https://www.raspberrypi.org/documentation/usage/gpio/) of your Raspberry Pi version/model. Also other pins could work, if you know how to configure it on the Raspberry, but it might be tricky and not work out of the box.
+* In [BigTreeTech SmartFilamentSensor Manual](https://github.com/bigtreetech/smart-filament-detection-module/tree/master/manual) on page 12 you can find the functionality of the pins.
+
 
 Note: The BTT Pins are labeled as follows
 
@@ -63,44 +65,51 @@ E.g.
 * BCM GPIO **17**
 
 ### Detection time
-Currently it is necessary to configure a maximum time period no filament movement was detected. This time could be depended on the print speed and maximum print line length. For the beginning - until I figured out how to estimate the best detection time - you can run a test print and messearue your maximum time and configure this value.
-The default value 45 seconds was estimated on max. print speed 10mm/s, for faster prints it could be smaller.
+Currently, it is necessary to configure a maximum time period no filament movement was detected.   
+This time could be depended on the print speed and maximum print line length, so you should determine empirically its value.
+The default value (45 s) was estimated on max. print speed 10 mm/s, for faster prints it could be smaller.
 
 ### Detection distance
-Version 1.1.2 of this plugin detects the movement depending on the moved distance. These distance is calculated from the GCode sent to the printer. Therefore it is necessary to configure a distance without movement being detected. In Marlin Firmware the default value is set to 7mm. I recommend to set it higher than in the firmware, because it could make the detection much too sensitive.
+Alternatively, this plugin can also respond based on the expected length of filament consumed.  
+Therefore it is necessary to configure a distance without movement being detected. 
+These distance is calculated from the G-code sent to the printer.  
+In Marlin Firmware the default value is set to 7 mm. I recommend to set it higher than in the firmware, because it could make the detection too sensitive.
 
 ### Octoprint - Firmware & Protocol
-Since currently GCode command M600 is used to interrupt the print, it is recommended to add M600 to the setting "Pausing commands".
-Since v1.1.3 there are also alternative pausing commands [M0, M1, M25, M226, M600, M601] available, for those whose printer don't support M600.
+Several commands are available in the "Pausing commands" setting to interrupt the print.  
+Available commands include [M0, M1, M25, M226, M600, M601]. Select the most appropriate for your printer.  
 
 ### Octoprint - GCode Scripts
-If you do not want that the print is paused right on your print, I recommend to add a GCode Script for "After print job is paused". Also adding GCode script "Before print job is resumed" might be useful, in the case you hit the heatbed or print head during the change of the filament or removing the blockage.
+If you do not want that the print is paused right on your print, I recommend to add a GCode Script for "After print job is paused".  
+Also adding GCode script "Before print job is resumed" might be useful, in the case you hit the heatbed or print head during the change of the filament or removing the blockage.
 
-### Test script
-Advice: don't run the test script in this repository durin a print. This leads to failures in the detection of movements of the print and therefore to missbehaviour of the plugin.
+### connection_check test script
+This script is provided to test the communication between the plugin and the filament sensor.
+Run this script on the raspberry shell using:  
 
-## GCode
-### Start GCode
-Since the sensor is activated with the first G0 or G1 command it is adviced to perform these commands after complete heatup of the printer.
+    $ python3 connection_check.py  
+For the test you can pass and move manually a short lengh of filament through the filament detector.   
+DO NOT run this script during a print.
+
+## G-code
+### Start G-code
+The sensor is activated after a number of Z-position changes (through G0-G3 G-code commands) take place in the printer.  
+The number of Z movements for activation depends on your Start G-code and can be set on settings.  
+For a Snapmaker with the Start G-code shown below, this value has to be set to 1.
 
 E.g.
 ```
-; Ender 3 Custom Start G-code
-M140 S{material_bed_temperature_layer_0} ; Set Heat Bed temperature
-M190 S{material_bed_temperature_layer_0} ; Wait for Heat Bed temperature
-M104 S160; start warming extruder to 160
-G28 ; Home all axes
-G29 ; Auto bed-level (BL-Touch)
-G92 E0 ; Reset Extruder
-M104 S{material_print_temperature_layer_0} ; Set Extruder temperature
-M109 S{material_print_temperature_layer_0} ; Wait for Extruder temperature
-G1 X0.1 Y20 Z0.3 F5000.0 ; Move to start position
-; G1 Z2.0 F3000 ; Move Z Axis up little to prevent scratching of Heat Bed
-G1 X0.4 Y200.0 Z0.3 F5000.0 ; Move to side a little
-G1 X0.4 Y20 Z0.3 F1500.0 E30 ; Draw the second line
-G92 E0 ; Reset Extruder
-G1 Z2.0 F3000 ; Move Z Axis up little to prevent scratching of Heat Bed
-; End of custom start GCode
+M104 S{material_print_temperature_layer_0} ;Set Hotend Temperature
+M140 S{material_bed_temperature_layer_0} ;Set Bed Temperature
+G28 ;home
+G90 ;absolute positioning
+G1 X-10 Y-10 F3000 ;Move to corner 
+G1 Z0 F1800 ;Go to zero offset
+M109 S{material_print_temperature_layer_0} ;Wait for Hotend Temperature
+M190 S{material_bed_temperature_layer_0} ;Wait for Bed Temperature
+G92 E0 ;Zero set extruder position
+G1 E20 F200 ;Feed filament to clear nozzle
+G92 E0 ;Zero set extruder position
 ```
 
 ## Disclaimer
