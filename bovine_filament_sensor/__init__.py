@@ -21,23 +21,9 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
         self.current_e = -1
         self.z_changes = 0
         self.START_DISTANCE_OFFSET = 7
-        self.send_code = False
+        self.response_sent = False
         self.sensor_thread = None
         self._data = None
-
-    def initialize(self):
-        self._logger.info("Initialize: Instantiate DetectionData")
-        self._data = DetectionData(self.detection_distance, True,
-                                   self.update_ui)
-
-    def on_after_startup(self):
-        self._logger.info("Running RPi.GPIO version '%s'" % GPIO.VERSION)
-
-        if GPIO.VERSION < "0.6":    # Need >= 0.6 for edge detection
-            raise Exception("RPi.GPIO must be greater than 0.6")
-        GPIO.setwarnings(False)     # Disable GPIO warnings
-
-        self._setup_sensor()
 
     @property
     def sensor_pin(self):
@@ -58,11 +44,11 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
     @property
     def pause_command(self):
         return self._settings.get(["pause_command"])
-    
+
     @property
     def mode(self):
         return int(self._settings.get(["mode"]))
-    
+
     # Distance detection
     @property
     def detection_distance(self):
@@ -70,13 +56,49 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
 
     # Timeout detection
     @property
-    def sensor_max_idle(self):
-        return int(self._settings.get(["sensor_max_idle"]))
+    def max_idle_time(self):
+        return int(self._settings.get(["max_idle_time"]))
 
     # Movements before Start sensor
     @property
     def z_event_number(self):
         return int(self._settings.get(["z_events_number"]))
+
+    def get_settings_defaults(self):
+        """Plugin's default settings (SettingsPlugin mixin)."""
+        self._logger.info("Get_settings_defaults")
+        return dict(
+            # Motion sensor
+            mode=1,  # BCM Mode
+            sensor_enabled=True,  # Sensor detection is enabled by default
+            sensor_pin=24,  #
+            detection_method=0,  # 0/1 = timeout/distance detection
+            z_event_number=3,  # counts printer movements before actual printing
+
+            # Distance detection
+            # Recommended detection distance from Marlin would be 7
+            detection_distance=15,
+
+            # Timeout detection
+            # Maximum time no movement is detected - default continously
+            max_idle_time=45,
+
+            pause_command="M600",
+        )
+
+    def initialize(self):
+        self._logger.info("Initialize: Instantiate DetectionData")
+        self._data = DetectionData(self.detection_distance, True,
+                                   self.update_ui)
+
+    def on_after_startup(self):
+        self._logger.info("Running RPi.GPIO version '%s'" % GPIO.VERSION)
+
+        if GPIO.VERSION < "0.6":    # Need >= 0.6 for edge detection
+            raise Exception("RPi.GPIO must be greater than 0.6")
+        GPIO.setwarnings(False)     # Disable GPIO warnings
+
+        self._setup_sensor()
 
     # Initialization methods
     def _setup_sensor(self):
@@ -98,8 +120,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
             try:
                 GPIO.remove_event_detect(self.sensor_pin)
             except ValueError:
-                self._logger.warn(
-                    "Pin " + str(self.sensor_pin) + " not used before")
+                self._logger.warn("Pin %i not used before" % self.sensor_pin)
 
             GPIO.add_event_detect(self.sensor_pin, GPIO.BOTH,
                                   callback=self.reset_distance)
@@ -110,30 +131,6 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
         self._data.filament_moving = False
         self.sensor_thread = None
         self._data.remaining_distance = self.detection_distance
-
-    def get_settings_defaults(self):
-        """SettingsPlugin mixin.
-        Plugin's default settings.
-        """
-        self._logger.info("Get_settings_defaults")
-        return dict(
-            # Motion sensor
-            mode=1,               # BCM Mode
-            sensor_enabled=True,  # Sensor detection is enabled by default
-            sensor_pin=24,        #
-            detection_method=0,   # 0/1 = timeout/distance detection
-            z_event_number=3,     # counts printer movements before actual printing
-
-            # Distance detection
-            # Recommended detection distance from Marlin would be 7
-            detection_distance=15,
-
-            # Timeout detection
-            # Maximum time no movement is detected - default continously
-            sensor_max_idle=45,
-
-            pause_command="M600",
-        )
 
     def on_settings_save(self, data):
         SettingsPlugin.on_settings_save(self, data)
@@ -194,19 +191,19 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
             # Timeout detection
             elif self.detection_method == 0 and self.sensor_thread is None:
                 self._logger.debug("Detection Mode: Timeout")
-                self._logger.debug("Timeout: %s" % self.sensor_max_idle)
+                self._logger.debug("Timeout: %s" % self.max_idle_time)
 
                 self.sensor_thread = TimeoutDetector(
                     1, "TimeoutDetectionThread",
                     self.sensor_pin,
-                    self.sensor_max_idle,
+                    self.max_idle_time,
                     self._logger, self._data,
-                    callback=self.printer_change_filament
+                    callback=self.raise_emergency_response
                 )
                 self.sensor_thread.start()
                 self._logger.info("Motion sensor started: Timeout detection")
 
-            self.send_code = False
+            self.response_sent = False
             self._data.filament_moving = True
 
     # Stop the motion_sensor thread
@@ -221,33 +218,34 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
         GPIO.setup(PIN, GPIO.OUT)
         for n in range(25):
             GPIO.output(PIN, True)  # Turn OFF LED
-            sleep(2)
-            GPIO.output(PIN, False)  # Turn ON LED
             sleep(1)
+            GPIO.output(PIN, False)  # Turn ON LED
+            sleep(0.5)
 
-    # Sensor callbacks
     # noinspection PyUnusedLocal
-    def printer_change_filament(self, dummy):
-        """Send configured pause command to the printer to interrupt the print
+    def raise_emergency_response(self, dummy):
+        """Raise configured response to interrupt the print (Sensor callback).
         """
         # Check if stop signal was already sent
-        if not self.send_code:
+        if not self.response_sent:
             self._logger.error("Motion sensor detected no movement")
             self._logger.info("Pause command: " + self.pause_command)
+
             if self.pause_command == "@Mu":
                 self._logger.info("Muuuuuuuuu!!!!")
                 self.ring_bell()
             else:
                 self._printer.commands(self.pause_command)
-                self.send_code = True
+
+            self.response_sent = True
             self._data.filament_moving = False
             self.last_e = -1  # Set to -1, so it ignores the first test then continues
 
-    # Reset the distance, if the remaining distance is smaller than the new value
     # noinspection PyUnusedLocal
     def reset_distance(self, pin):
-        self._logger.debug("Motion sensor detected movement")
-        self.send_code = False
+        """Reset remaining distance if smaller than the new value"""
+        self._logger.debug("Motion sensor reset detection distance")
+        self.response_sent = False
         self.last_movement_time = datetime.now()
         if self._data.remaining_distance < self.detection_distance:
             self._data.remaining_distance = self.detection_distance
@@ -275,13 +273,13 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
             if remaining_distance > 0:
 
                 # Calculate deltaDistance if absolute extrusion
-                if self._data.absolut_extrusion:
-                    # LastE is not used and set to the same value as current_e.
+                if self._data.absolute_extrusion:
+                    # Last_e is not used and set to the same value as current_e.
                     # Occurs on first run or after resuming
                     if self.last_e < 0:
                         self._logger.info(
                             "Ignoring run with a negative value. "
-                            "Setting LastE to PE: %s = %s" % (self.last_e, read_e))
+                            "Setting last_e to read_e: %s = %s" % (self.last_e, read_e))
                         self.last_e = read_e
                     else:
                         self.last_e = self.current_e
@@ -293,7 +291,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
                     self._logger.debug(
                         "CurrentE: %s - LastE: %s = %s" % (self.current_e, self.last_e, rounded_delta))
 
-                # deltaDistance is just position if relative extrusion
+                # delta_e is just position if relative extrusion
                 else:
                     delta_e = float(read_e)
                     rounded_delta = round(delta_e, 3)
@@ -320,7 +318,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
                 # Stops pausing when the CPU gets hung up.
                 timedelta = datetime.now() - self.last_movement_time
                 if timedelta.total_seconds() > 10:
-                    self.printer_change_filament(None)
+                    self.raise_emergency_response(None)
                 else:
                     self._logger.debug(
                         "Ignored pause command due to 5 second rule")
@@ -437,16 +435,16 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
                 self._logger.debug(
                     "Found G92 command in '%s' : Reset Extruders" % cmd)
 
-            # M82 absolut extrusion mode
+            # M82 absolute extrusion mode
             elif gcode == "M82":
-                self._data.absolut_extrusion = True
+                self._data.absolute_extrusion = True
                 self._logger.info(
-                    "Found M82 command in '%s' : Absolut extrusion") % cmd
+                    "Found M82 command in '%s' : Absolute extrusion") % cmd
                 self.last_e = 0
 
             # M83 relative extrusion mode
             elif gcode == "M83":
-                self._data.absolut_extrusion = False
+                self._data.absolute_extrusion = False
                 self._logger.info(
                     "Found M83 command in '%s' : Relative extrusion") % cmd
                 self.last_e = 0

@@ -1,9 +1,9 @@
 import json
 
 class DetectionData:
-    def __init__(self, remaining_distance, absolut_extrusion, callback=None):
+    def __init__(self, remaining_distance, absolute_extrusion, callback=None):
         self._remaining_distance = remaining_distance
-        self._absolut_extrusion = absolut_extrusion
+        self._absolute_extrusion = absolute_extrusion
         self.START_DISTANCE_OFFSET = 7
         self.update_gui = callback
 
@@ -49,12 +49,12 @@ class DetectionData:
         self._current_e = value
 
     @property
-    def absolut_extrusion(self):
-        return self._absolut_extrusion
+    def absolute_extrusion(self):
+        return self._absolute_extrusion
 
-    @absolut_extrusion.setter
-    def absolut_extrusion(self, value):
-        self._absolut_extrusion = value
+    @absolute_extrusion.setter
+    def absolute_extrusion(self, value):
+        self._absolute_extrusion = value
 
     @property
     def last_motion_detected(self):

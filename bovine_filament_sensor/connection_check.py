@@ -13,13 +13,13 @@
 import RPi.GPIO as GPIO
 import time
 
-# Configure your GPIO pin
+# GPIO pin configuration
 PIN = 24
-GPIO.setmode(GPIO.BCM)   # GPIO.BCM/GPIO.BOARD
+GPIO.setmode(GPIO.BCM)    # GPIO.BCM/GPIO.BOARD
 GPIO.setup(PIN, GPIO.IN)
 
 # Time in seconds
-max_not_moving_time = 2
+max_idle_time = 2
 
 lastValue = GPIO.input(PIN)
 # Get current time in seconds
@@ -33,10 +33,10 @@ def main():
         while True:
             timespan = (time.time() - lastMotion)
 
-            if timespan > max_not_moving_time:
-                print("No motion detected")
+            if timespan > max_idle_time:
+                print("IDLE")
             else:
-                print("Moving")
+                print("MOVING")
 
             time.sleep(0.250)
 

@@ -71,7 +71,7 @@
             <label class="control-label">{{ _('Detection time:') }}</label>
             <div class="controls">
                 <div class="input-append" data-toggle="tooltip" title="{{ _('When a sensor state change happens, wait for this amount of time to wait for the signal to stabilize.') }}">
-                    <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settingsViewModel.settings.plugins.bovine_filament_sensor.sensor_max_idle">
+                    <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settingsViewModel.settings.plugins.bovine_filament_sensor.max_idle_time">
                     <span class="add-on">sec</span>
                 </div>
                 <span class="help-block"><small>Don't choose the timeout value too small. During long slow movements, it takes some time until the sensor changes the value.</small></span>

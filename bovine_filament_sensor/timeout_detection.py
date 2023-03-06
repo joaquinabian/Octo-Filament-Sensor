@@ -26,7 +26,7 @@ class TimeoutDetector(threading.Thread):
         GPIO.add_event_detect(pin, GPIO.BOTH, callback=self.motion)
 
     def run(self):
-        """Override run method of threading"""
+        """Override run method of threading.Thread"""
         while self.keep_running:
             timespan = (time.time() - self._data.last_motion_detected)
 
@@ -41,8 +41,7 @@ class TimeoutDetector(threading.Thread):
     # noinspection PyUnusedLocal
     def motion(self, pin):
         """Eventhandler for GPIO filament sensor signal.
-        The new state of the GPIO pin is read and determinated.
-        It is checked if motion is detected and printed to the console.
+        The new state of the GPIO pin is read and timed.
         """
         last_motion = time.time()
         self._data.last_motion_detected = last_motion
