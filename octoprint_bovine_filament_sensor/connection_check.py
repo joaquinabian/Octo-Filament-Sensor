@@ -16,8 +16,8 @@ import time
 # CONST
 # Configure your GPIO pin
 USED_PIN = 24
-GPIO.setmode(GPIO.BOARD)
-# GPIO.setmode(GPIO.BCM)
+# GPIO.setmode(GPIO.BOARD)
+GPIO.setmode(GPIO.BCM)
 # Time in seconds
 max_not_moving_time = 2
 # Set up the GPIO channels - one input and one output

@@ -6,8 +6,8 @@ from time import sleep
 from octoprint.plugin import StartupPlugin, AssetPlugin, EventHandlerPlugin
 from octoprint.plugin import TemplatePlugin, SettingsPlugin, SimpleApiPlugin
 from octoprint.events import Events
-from octoprint_bovine_filament_sensor.timeout_detection import TimeoutDetector
-from octoprint_bovine_filament_sensor.data import DetectionData
+from .timeout_detection import TimeoutDetector
+from .detection_data import DetectionData
 
 
 class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlugin,
@@ -16,8 +16,8 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
     def __init__(self):
         self.print_started = False
         self.last_movement_time = None
-        self.lastE = -1
-        self.currentE = -1
+        self.last_e = -1
+        self.current_e = -1
         self.START_DISTANCE_OFFSET = 7
         self.send_code = False
         self.sensor_thread = None
@@ -30,8 +30,8 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
 
     def on_after_startup(self):
         self._logger.info("Bovine Filament Sensor started")
-
         self._logger.info("Running RPi.GPIO version '%s'" % GPIO.VERSION)
+
         if GPIO.VERSION < "0.6":    # Need >= 0.6 for edge detection
             raise Exception("RPi.GPIO must be greater than 0.6")
         GPIO.setwarnings(False)     # Disable GPIO warnings
@@ -113,7 +113,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
         """SettingsPlugin mixin.
         Plugin's default settings.
         """
-        self._logger.info("Q-get_settings_defaults")
+        self._logger.info("Get_settings_defaults")
         return dict(
             # Motion sensor
             mode=0,               # Board Mode
@@ -151,7 +151,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
     def stop_connection_test(self):
         """Connection tests"""
         if self.sensor_thread is not None and self.sensor_thread.name == "ConnectionTest":
-            self.sensor_thread.keepRunning = False
+            self.sensor_thread.keep_running = False
             self.sensor_thread = None
             self._data.connection_test_running = False
             self._logger.info("Connection test stopped")
@@ -166,7 +166,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
                                                  self.sensor_pin,
                                                  CONNECTION_TEST_TIME,
                                                  self._logger, self._data,
-                                                 pCallback=self.connection_test_callback)
+                                                 callback=self.connection_test_callback)
             self.sensor_thread.start()
             self._data.connection_test_running = True
             self._logger.info("Connection test started")
@@ -199,7 +199,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
                     self.sensor_pin,
                     self.sensor_max_idle,
                     self._logger, self._data,
-                    pCallback=self.printer_change_filament
+                    callback=self.printer_change_filament
                 )
                 self.sensor_thread.start()
                 self._logger.info("Motion sensor started: Timeout detection")
@@ -210,12 +210,12 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
     # Stop the motion_sensor thread
     def sensor_stop_thread(self):
         if self.sensor_thread is not None:
-            self.sensor_thread.keepRunning = False
+            self.sensor_thread.keep_running = False
             self.sensor_thread = None
             self._logger.info("Motion sensor stopped")
 
     def ring_bell(self):
-        PIN=21
+        PIN = 21
         GPIO.setup(PIN, GPIO.OUT)
         for n in range(25):
             GPIO.output(PIN, True)  # Turn OFF LED
@@ -239,11 +239,11 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
                 self._printer.commands(self.pause_command)
                 self.send_code = True
             self._data.filament_moving = False
-            self.lastE = -1  # Set to -1, so it ignores the first test then continues
+            self.last_e = -1  # Set to -1, so it ignores the first test then continues
 
     # Reset the distance, if the remaining distance is smaller than the new value
     # noinspection PyUnusedLocal
-    def reset_distance(self, pPin):
+    def reset_distance(self, pin):
         self._logger.debug("Motion sensor detected movement")
         self.send_code = False
         self.last_movement_time = datetime.now()
@@ -253,8 +253,8 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
 
     def init_distance_detection(self):
         """Initialize the distance detection values"""
-        self.lastE = -1.0
-        self.currentE = 0.0
+        self.last_e = -1.0
+        self.current_e = 0.0
         self.reset_remaining_distance()
 
     def reset_remaining_distance(self):
@@ -262,52 +262,54 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
         START_DISTANCE_OFFSET is used for the (re-)start sequence.
 
         """
-        self._data.remaining_distance = self.detection_distance + \
-                                        self.START_DISTANCE_OFFSET
+        self._data.remaining_distance = (self.detection_distance +
+                                         self.START_DISTANCE_OFFSET)
 
-    def calc_distance(self, pE):
+    def calc_distance(self, read_e):
         """Calculate the remaining distance"""
         if self.detection_method == 1:
-
+            remaining_distance = self._data.remaining_distance
             # First check if need continue after last move
-            if self._data.remaining_distance > 0:
+            if remaining_distance > 0:
 
                 # Calculate deltaDistance if absolute extrusion
                 if self._data.absolut_extrusion:
-                    # LastE is not used and set to the same value as currentE.
+                    # LastE is not used and set to the same value as current_e.
                     # Occurs on first run or after resuming
-                    if self.lastE < 0:
+                    if self.last_e < 0:
                         self._logger.info(
                             "Ignoring run with a negative value. "
-                            "Setting LastE to PE: %s = %s" % (self.lastE, pE))
-                        self.lastE = pE
+                            "Setting LastE to PE: %s = %s" % (self.last_e, read_e))
+                        self.last_e = read_e
                     else:
-                        self.lastE = self.currentE
+                        self.last_e = self.current_e
 
-                    self.currentE = pE
+                    self.current_e = read_e
 
-                    deltaDistance = self.currentE - self.lastE
-                    rounded_delta = round(deltaDistance, 3)
+                    delta_e = self.current_e - self.last_e
+                    rounded_delta = round(delta_e, 3)
                     self._logger.debug(
-                        "CurrentE: %s - LastE: %s = %s" % (self.currentE, self.lastE, rounded_delta))
+                        "CurrentE: %s - LastE: %s = %s" % (self.current_e, self.last_e, rounded_delta))
 
                 # deltaDistance is just position if relative extrusion
                 else:
-                    deltaDistance = float(pE)
-                    rounded_delta = round(deltaDistance, 3)
+                    delta_e = float(read_e)
+                    rounded_delta = round(delta_e, 3)
                     self._logger.debug(
                         "Relative Extrusion = %s" % rounded_delta)
 
-                if deltaDistance > self.detection_distance:
+                if delta_e > self.detection_distance:
                     # Calculate the deltaDistance modulo the detection_distance
                     # Sometimes the polling of M114 is inaccurate so that with the next poll
                     # very high distances are put back followed by zero distance changes.
-                    deltaDistance = deltaDistance % self.detection_distance
+                    delta_e = delta_e % self.detection_distance
 
-                current_remaining = self._data.remaining_distance - deltaDistance
+                current_remaining = remaining_distance - delta_e
 
                 self._logger.debug(
-                    f"Remaining: {self._data.remaining_distance} - Extruded: {deltaDistance} = {current_remaining}"
+                    "Remaining: %s - Extruded: %s = %s" % (remaining_distance,
+                                                           delta_e,
+                                                           current_remaining)
                 )
                 self._data.remaining_distance = current_remaining
 
@@ -325,19 +327,19 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
         self._plugin_manager.send_plugin_message(self._identifier,
                                                  self._data.to_json())
 
-    def connection_test_callback(self, pMoving=False):
-        self._data.filament_moving = pMoving
+    def connection_test_callback(self, is_moving=False):
+        self._data.filament_moving = is_moving
 
-    # Remove motion sensor thread if the print is paused
-    def print_paused(self, pEvent=""):
+    def print_paused(self, event=""):
+        """Remove motion sensor thread if the print is paused"""
         self.print_started = False
-        self._logger.info("%s: Pausing filament sensors." % pEvent)
+        self._logger.info("%s: Pausing filament sensors." % event)
         if self.sensor_enabled and self.detection_method == 0:
             self.sensor_stop_thread()
 
     # Events
+    # noinspection PyUnusedLocal
     def on_event(self, event, payload):
-        _ = payload
         if event is Events.PRINT_STARTED:
             self.stop_connection_test()
             self.print_started = True
@@ -383,10 +385,9 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
 
     # API commands
     def get_api_commands(self):
-        return dict(
-            startConnectionTest=[],
-            stopConnectionTest=[]
-        )
+        return dict(startConnectionTest=[],
+                    stopConnectionTest=[]
+                    )
 
     # noinspection PyUnusedLocal
     def on_api_command(self, command, data):
@@ -435,17 +436,16 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
                 self._data.absolut_extrusion = True
                 self._logger.info(
                     "Found M82 command in '%s' : Absolut extrusion") % cmd
-                self.lastE = 0
+                self.last_e = 0
 
             # M83 relative extrusion mode
             elif gcode == "M83":
                 self._data.absolut_extrusion = False
                 self._logger.info(
                     "Found M83 command in '%s' : Relative extrusion") % cmd
-                self.lastE = 0
+                self.last_e = 0
 
         return cmd    
-
 
     def get_update_information(self):
         """Software Update Hook.

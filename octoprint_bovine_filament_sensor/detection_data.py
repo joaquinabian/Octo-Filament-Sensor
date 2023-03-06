@@ -8,7 +8,7 @@ class DetectionData(object):
     @remaining_distance.setter
     def remaining_distance(self, value):
         self._remaining_distance = value
-        self.callbackUpdateUI()
+        self.update_gui()
 
     @property
     def print_started(self):
@@ -19,20 +19,20 @@ class DetectionData(object):
         self._print_started = value
 
     @property
-    def lastE(self):
-        return self._lastE
+    def last_e(self):
+        return self._last_e
 
-    @lastE.setter
-    def lastE(self, value):
-        self._lastE = value
+    @last_e.setter
+    def last_e(self, value):
+        self._last_e = value
 
     @property
-    def currentE(self):
-        return self._currentE
+    def current_e(self):
+        return self._current_e
 
-    @currentE.setter
-    def currentE(self, value):
-        self._currentE = value
+    @current_e.setter
+    def current_e(self, value):
+        self._current_e = value
 
     @property
     def absolut_extrusion(self):
@@ -49,7 +49,7 @@ class DetectionData(object):
     @last_motion_detected.setter
     def last_motion_detected(self, value):
         self._last_motion_detected = value
-        self.callbackUpdateUI()
+        self.update_gui()
 
     @property
     def filament_moving(self):
@@ -58,7 +58,7 @@ class DetectionData(object):
     @filament_moving.setter
     def filament_moving(self, value):
         self._filament_moving = value
-        self.callbackUpdateUI()
+        self.update_gui()
 
     @property
     def connection_test_running(self):
@@ -67,19 +67,20 @@ class DetectionData(object):
     @connection_test_running.setter
     def connection_test_running(self, value):
         self._connection_test_running = value
-        self.callbackUpdateUI()
+        self.update_gui()
 
-    def __init__(self, pRemainingDistance, pAbsolutExtrusion, pCallback=None):
-        self._remaining_distance = pRemainingDistance
-        self._absolut_extrusion = pAbsolutExtrusion
+    def __init__(self, remaining_distance, absolut_extrusion, callback=None):
+        self._remaining_distance = remaining_distance
+        self._absolut_extrusion = absolut_extrusion
         self.START_DISTANCE_OFFSET = 7
-        self.callbackUpdateUI = pCallback
+        self.update_gui = callback
 
         # Default values
         self._print_started = False
-        self._lastE = -1
-        self._currentE = -1
+        self._last_e = -1
+        self._current_e = -1
         self._last_motion_detected = ""
+        self._connection_test_running = None
         self._filament_moving = False
 
     def to_json(self):
