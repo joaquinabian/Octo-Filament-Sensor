@@ -1,6 +1,6 @@
 import json
 
-class DetectionData(object):
+class DetectionData:
     def __init__(self, remaining_distance, absolut_extrusion, callback=None):
         self._remaining_distance = remaining_distance
         self._absolut_extrusion = absolut_extrusion

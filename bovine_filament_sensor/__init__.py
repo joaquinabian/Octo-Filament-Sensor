@@ -10,26 +10,27 @@ from .timeout_detection import TimeoutDetector
 from .detection_data import DetectionData
 
 
-class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlugin,
-                                 SettingsPlugin, AssetPlugin, SimpleApiPlugin):
+class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
+                                 TemplatePlugin, SettingsPlugin,
+                                 AssetPlugin, SimpleApiPlugin):
 
     def __init__(self):
         self.print_started = False
         self.last_movement_time = None
         self.last_e = -1
         self.current_e = -1
+        self.z_changes = 0
         self.START_DISTANCE_OFFSET = 7
         self.send_code = False
         self.sensor_thread = None
         self._data = None
 
     def initialize(self):
-        self._logger.info("Q-initialize")
+        self._logger.info("Initialize: Instantiate DetectionData")
         self._data = DetectionData(self.detection_distance, True,
                                    self.update_ui)
 
     def on_after_startup(self):
-        self._logger.info("Bovine Filament Sensor started")
         self._logger.info("Running RPi.GPIO version '%s'" % GPIO.VERSION)
 
         if GPIO.VERSION < "0.6":    # Need >= 0.6 for edge detection
@@ -72,9 +73,15 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
     def sensor_max_idle(self):
         return int(self._settings.get(["sensor_max_idle"]))
 
+    # Movements before Start sensor
+    @property
+    def z_event_number(self):
+        return int(self._settings.get(["z_events_number"]))
+
     # Initialization methods
     def _setup_sensor(self):
-        
+        """"""
+        self._logger.info("Setting up sensor data")
         # Clean up before intializing again (ports could already be in use)
         if self.mode == 0:
             self._logger.info("Using Board Mode")
@@ -102,11 +109,6 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
 
         self._data.filament_moving = False
         self.sensor_thread = None
-
-        self.load_sensor_data()
-    
-    def load_sensor_data(self):
-        self._logger.info("loading bovine filament sensor data")
         self._data.remaining_distance = self.detection_distance
 
     def get_settings_defaults(self):
@@ -116,10 +118,11 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
         self._logger.info("Get_settings_defaults")
         return dict(
             # Motion sensor
-            mode=0,               # Board Mode
+            mode=1,               # BCM Mode
             sensor_enabled=True,  # Sensor detection is enabled by default
             sensor_pin=24,        #
             detection_method=0,   # 0/1 = timeout/distance detection
+            z_event_number=3,     # counts printer movements before actual printing
 
             # Distance detection
             # Recommended detection distance from Marlin would be 7
@@ -193,7 +196,6 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
                 self._logger.debug("Detection Mode: Timeout")
                 self._logger.debug("Timeout: %s" % self.sensor_max_idle)
 
-                # Start Timeout_Detection thread
                 self.sensor_thread = TimeoutDetector(
                     1, "TimeoutDetectionThread",
                     self.sensor_pin,
@@ -352,18 +354,22 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
             # If distance detection is used reset the remaining distance,
             # otherwise the print is not resuming anymore
             if self.detection_method == 1:
-                self.reset_remainin_distance()
+                self.reset_remaining_distance()
 
             self.sensor_start()
 
-        # Start motion sensor on first G1 command
+        # Start motion sensor after a <z_event_number number> of z_changes
         elif event is Events.Z_CHANGE:
+            self._logger.debug("Z_CHANGE EVENT detected")
             if self.print_started:
-                self.sensor_start()
-
-                # Set print_started to 'False' 
-                # to prevent that the starting command is called multiple times
-                self.print_started = False
+                if self.z_changes < self.z_event_number:
+                    self.z_changes += 1
+                    self._logger.debug("Z_CHANGE EVENT #%i" % self.z_changes)
+                else:
+                    self.sensor_start()
+                    # Set print_started to 'False'
+                    # to prevent that the starting command is called multiple times
+                    self.print_started = False
 
         # Disable sensor
         elif event in (Events.PRINT_DONE,
@@ -429,7 +435,7 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin, TemplatePlug
                 if self.detection_method == 1:
                     self.init_distance_detection()
                 self._logger.debug(
-                    "Found G92 command in '" + cmd + "' : Reset Extruders")
+                    "Found G92 command in '%s' : Reset Extruders" % cmd)
 
             # M82 absolut extrusion mode
             elif gcode == "M82":

@@ -41,6 +41,15 @@
                 <span class="help-block"><small>Before selecting a pause command check if your firmware supports it!</small></span>
             </div>
         </div>
+         <div class="control-group">
+            <label class="control-label">{{ _('Allowed pre-print movements:') }}</label>
+            <div class="controls">
+                <div class="input-append" data-toggle="tooltip" title="{{ _('Takes into account preprint movements before the actual print starts.') }}">
+                    <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settingsViewModel.settings.plugins.bovine_filament_sensor.z_events_number">
+                    <span class="add-on">sec</span>
+                </div>
+            </div>
+        </div>
         <!-- GPIO pin on the raspberry -->
         <div class="control-group">
             <label class="control-label">{{ _('Motion Sensor GPIO Pin:') }}</label>
