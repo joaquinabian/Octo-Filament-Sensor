@@ -1,6 +1,20 @@
 import json
 
 class DetectionData(object):
+    def __init__(self, remaining_distance, absolut_extrusion, callback=None):
+        self._remaining_distance = remaining_distance
+        self._absolut_extrusion = absolut_extrusion
+        self.START_DISTANCE_OFFSET = 7
+        self.update_gui = callback
+
+        # Default values
+        self._print_started = False
+        self._last_e = -1
+        self._current_e = -1
+        self._last_motion_detected = ""
+        self._connection_test_running = None
+        self._filament_moving = False
+
     @property
     def remaining_distance(self):
         return self._remaining_distance
@@ -68,20 +82,6 @@ class DetectionData(object):
     def connection_test_running(self, value):
         self._connection_test_running = value
         self.update_gui()
-
-    def __init__(self, remaining_distance, absolut_extrusion, callback=None):
-        self._remaining_distance = remaining_distance
-        self._absolut_extrusion = absolut_extrusion
-        self.START_DISTANCE_OFFSET = 7
-        self.update_gui = callback
-
-        # Default values
-        self._print_started = False
-        self._last_e = -1
-        self._current_e = -1
-        self._last_motion_detected = ""
-        self._connection_test_running = None
-        self._filament_moving = False
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
