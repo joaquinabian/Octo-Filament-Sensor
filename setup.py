@@ -11,7 +11,7 @@ plugin_package = "bovine_filament_sensor"
 
 # The plugin's human-readable name.
 # Overwritable via __plugin_name__ in the plugin module
-plugin_name = "OctoPrint-Bovine_filament_sensor"
+plugin_name = "OctoPrint Bovine Filament Sensor"
 
 # The plugin's version.
 # Overwritable via __plugin_version__ in the plugin module
@@ -31,7 +31,7 @@ plugin_author_email = "gatoygata2@gmail.com"
 
 # The plugin's homepage URL.
 # Overwritable via __plugin_url__ in the plugin module
-plugin_url = "https://github.com/joaquinabian/OctoPrint-Bovine_filament_sensor"
+plugin_url = "https://github.com/joaquinabian/OctoPrint-Bovine-Filament-Sensor"
 
 # The plugin's license.
 # Overwritable via __plugin_license__ in the plugin module
