@@ -1,9 +1,8 @@
 $(function(){
-    function Bovine_filament_sensorSidebarViewModel(parameters){
+    function bovineFilamentSensorSidebarViewModel(parameters){
         var self = this;
 
         self.settingsViewModel = parameters[0];
-        //self.bovine_filament_sensorSettings = self.settingsViewModel.settings.plugins.bovine_filament_sensor;
 
         self.isSensorEnabled = ko.observable(undefined);
         self.remainingDistance = ko.observable(undefined);
@@ -11,7 +10,7 @@ $(function(){
         self.isFilamentMoving = ko.observable(undefined);
         self.isConnectionTestRunning = ko.observable(false);
 
-        //Returns the value in Yes/No if the Sensor is enabled 
+        //Returns the value of sensor_enabled as Yes/No
         self.getSensorEnabledString = function(){
             var sensorEnabled = self.settingsViewModel.settings.plugins.bovine_filament_sensor.sensor_enabled();
 
@@ -98,8 +97,8 @@ $(function(){
     }
 
     OCTOPRINT_VIEWMODELS.push({
-        construct: Bovine_filament_sensorSidebarViewModel,
-        name: "Bovine_filament_sensorSidebarViewModel",
+        construct: bovineFilamentSensorSidebarViewModel,
+        name: "bovineFilamentSensorSidebarViewModel",
         dependencies: ["settingsViewModel"],
         elements: ["#sidebar_plugin_bovine_filament_sensor"]
     });

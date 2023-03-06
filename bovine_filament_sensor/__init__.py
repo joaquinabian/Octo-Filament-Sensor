@@ -140,8 +140,8 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
         return [dict(type="settings", custom_bindings=True)]
 
     def get_assets(self):
-        """AssetPlugin mixin.
-        Plugin's asset files to be automatically included in the core UI.
+        """Plugin's asset files to be automatically included in the core UI.
+        (AssetPlugin mixin).
         """
         return dict(js=["js/bovine_filament_sensor_sidebar.js",
                         "js/bovine_filament_sensor_settings.js"])
@@ -410,11 +410,14 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
     def distance_detection(self, comm_instance, phase, cmd, cmd_type, gcode,
                            *args, **kwargs):
         """Hook to interpret GCode commands sent to the printer.
-        G92: Reset the distance detection values.
-        G0 or G1: Calculate the remaining distance.
+
+        | G92:
+        |  - Resets the distance detection values.
+        |  - Signals sensor start monitoring.
+        | G0-G3:
+        |  - Calculate the remaining distance.
         """
-        
-        # Only performed if distance detection is used
+        # Only for distance detection
         if self.detection_method == 1 and self.sensor_enabled:
             # G0/G1 for linear moves, G2/G3 for circle movements
             if gcode in ["G0", "G1", "G2", "G3"]:
@@ -453,30 +456,31 @@ class BovineFilamentSensorPlugin(StartupPlugin, EventHandlerPlugin,
 
     def get_update_information(self):
         """Software Update Hook.
-        Plugin configuration for the Software Update Plugin.
-        For details, see:
-        https://docs.octoprint.org/en/master/bundledplugins/softwareupdate.html
+
+        | Plugin configuration for the Software Update Plugin.
+        | For details, see:
+        | https://docs.octoprint.org/en/master/bundledplugins/softwareupdate.html
         """
         
         return {
             "bovine_filament_sensor": {
-                "displayName": "Bovine_filament_sensor Plugin",
+                "displayName": "Bovine Filament Sensor Plugin",
                 "displayVersion": self._plugin_version,
 
                 # version check: GitHub repository
                 "type": "github_release",
                 "user": "joaquinabian",
-                "repo": "OctoPrint-Bovine_filament_sensor",
+                "repo": "OctoPrint-Bovine-Filament-Sensor",
                 "current": self._plugin_version,
 
                 # update method: pip
-                "pip": "https://github.com/joaquinabian/OctoPrint-Bovine_filament_sensor/archive/{target_version}.zip",
+                "pip": "https://github.com/joaquinabian/OctoPrint-Bovine-Filament-Sensor/archive/{target_version}.zip",
             }
         }
 
 
-# If you want your plugin to be registered within OctoPrint under a different name 
-__plugin_name__ = "Bovine_filament_sensor"
+# To register the plugin within OctoPrint under a different name
+__plugin_name__ = "Bovine Filament Sensor"
 __plugin_pythoncompat__ = ">=3,<4"
 
 def __plugin_load__():

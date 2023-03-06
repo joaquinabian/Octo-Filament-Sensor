@@ -1,11 +1,11 @@
 /*
- * View model for OctoPrint-Bovine_filament_sensor
+ * View model for OctoPrint-Bovine-Filament-Sensor
  *
  * Author: joaquin abian
  * License: AGPLv3
  */
 $(function() {
-    function Bovine_filament_sensorSettingsViewModel(parameters) {
+    function bovineFilamentSensorSettingsViewModel(parameters) {
         var self = this;
 
         self.settingsViewModel = parameters[0];
@@ -77,8 +77,8 @@ $(function() {
     }
 
     OCTOPRINT_VIEWMODELS.push({
-        construct: Bovine_filament_sensorSettingsViewModel,
-        name: "Bovine_filament_sensorSettingsViewModel",
+        construct: bovineFilamentSensorSettingsViewModel,
+        name: "bovineFilamentSensorSettingsViewModel",
         dependencies: ["settingsViewModel", "printerStateViewModel"],
         elements: ["#settings_plugin_bovine_filament_sensor"]
     });
