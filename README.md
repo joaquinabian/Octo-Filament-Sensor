@@ -1,40 +1,47 @@
 # OctoPrint Bovine Filament Sensor
 
-[OctoPrint](http://octoprint.org/) plugin that lets integrate a Filament Sensor
-like the one described by [Makers Mashups](https://youtu.be/v2mQ4X1J3cs) into your filament path.
+[OctoPrint](http://octoprint.org/) plug-in that lets integrate a Filament Sensor into your filament path.
 
-The version I built:
+The plug-in monitors the sensor signal and produces several responses in case it doesn't sense filament movement.
+Responses include Pausing the print and Remote activation of a real cow-bell-based alarm in the same Wi-Fi network.
 
-![My sensor parametric design (OpenScad)](./extras/pics/filament_sensor.png)
+![Wi-Fi Cow Bell](./extras/pics/wi-fi_cow_bell.png)
 
-The sensor sends a toggling signal to the RPi through a GPIO pin.
-The pluging monitor this input and produces several responses in case 
-it doesn't sense filament movement.
-Response includes remote activation of a real cow-bell-based alarm in the same Wi-Fi network.
-
-This is a fork of Octoprint-Smart-Filament-Sensor from Royrdan.  
+This is a fork of [Octoprint-Smart-Filament-Sensor](https://github.com/Royrdan/Octoprint-Smart-Filament-Sensor) by Royrdan.  
 The following is mostly a reproduction of Royrdan README, but changes are being added as long as development continues.
 
-
-Initial work based on the [Octoprint-Filament-Reloaded](https://github.com/kontakt/Octoprint-Filament-Reloaded) plugin by kontakt.
-Fork of [Octoprint-Filament-Revolutions]https://github.com/RomRider/Octoprint-Filament-Revolutions plugin by RomRider.
+Initial work based on the [Octoprint-Filament-Reloaded](https://github.com/kontakt/Octoprint-Filament-Reloaded) plug-in by kontakt.
+Fork of [Octoprint-Filament-Revolutions](https://github.com/RomRider/Octoprint-Filament-Revolutions) plug-in by RomRider.
 
 The solution for this plugin is inspired by [Marlin Firmware](https://github.com/MarlinFirmware/Marlin)
 
 ## Required sensor
 
-To use this plugin a Filament Sensor is needed that sends a toogling digital signal (0-1-0...) during movement.
+To use this plug-in a Filament Sensor like the one described by [Makers Mashups](https://youtu.be/v2mQ4X1J3cs) is needed.
 
-This plugin can use the GPIO.BOARD or GPIO.BCM numbering scheme.
+The version I built:
+
+![My sensor parametric design (OpenScad)](./extras/pics/filament_sensor.png)
+
+It is based on a cheap IR Optocoupler with an LM393 comparator easily found in Amazon.
+
+![My Amazon Optocoupler](./extras/pics/ZHITING_LM393_IR_Optocoupler.png)
+
+The filament passing through the device makes the wheel turn.  
+The octocoupler originates a toogling digital signal (0-1-0...) as the wheel windows impede of let pass the IR light.  
+This signal is sent to the RPi through a GPIO pin which is monitored by the plug-in.
+
+
 
 ## Features
 
 * Configurable GPIO pins.
-* Support movement detection sensors, e.g. Smart-Filament-Sensor.
-* Detect if filament is not moving anymore (jammed or runout)
-    * Detection based on timeout
-    * Detection based on filament position sent with G0 or G1 commands (no negative effects on the print quality anymore compared to the previous version)
-    * Alternative pausing commands if M600 is not supported by the printer
+* Support commercial and homemade digital filament detection sensors.
+* Detect if filament is not moving anymore (even jammed or runout)
+    * Detection based on timeout.
+    * Detection based on extruder filament lenght.
+* Several alternative print pausing commands.
+* Raise Wi-Fi signal to trigger remote devices (i.e an automatic Cow-Bell)
 
 ## Installation
 
@@ -42,27 +49,31 @@ The OctoPrint Bovine Filament Sensor plugin is not yet fully functional.
 
 ## Configuration
 ### GPIO Pin
-* Choose any free GPIO pin you for data usage, but I would recommend to use GPIO pins without special functionalities like e.g. I2C.  
+* There are two different ways to number the GPIO pins:  
+  - BCM (Broadcom) - Correspond to the SOC channel number and represented as GPIOn (i.e GPIO23)
+  - Board (Physical) - the position of the pin on the board.  
+
+  Thus, for example, Board Pin **11** <=> GPIO**17**.  
+  Select the numbering mode in the plug-in settings.
+* Choose any free GPIO data pin, using preferently one with no special functionality like e.g. I2C.  
   I use GPIO24 which is next to a ground pin and in front of a 3V3 pin.  
   Please check the [documentation](https://www.raspberrypi.org/documentation/usage/gpio/) of your Raspberry Pi version/model. 
-* Run the sensor only on 3.3V, because GPIO pins don't like 5V for a long time
+* Run the sensor only on 3.3V, because Raspberry GPIO pins don't like 5V.
 * In [BigTreeTech SmartFilamentSensor Manual](https://github.com/bigtreetech/smart-filament-detection-module/tree/master/manual) on page 12 you can find the functionality of the pins.
 
 
-Note: The BTT Pins are labeled as follows
+BTT Pins are labeled as follows:
 
-S for SIN  <--- signal line (i.e. data source--attach to chosen GPIO pin)
-G for GND  <--- This is ground 
-V for VDD  <---  +3.3v in
+S for SIN  ---> signal line, to chosen signal GPIO input pin.  
+G for GND  ---> To Ground pin.   
+V for VDD  ---> To +3.3v pin.
 
-**Attention**
-There are two different modes for GPIO pins:
-* BCM (Broadcom SOC channel) - the numbers after the GPIO label
-* Board - the number of the pin on the board
+The ZHITING LM393 I use, is labelled as follows (see picture above):
 
-E.g.
-* Board Pin **11**
-* BCM GPIO **17**
+A0 ---> Not used. Analogic output.  
+D0 ---> Digital signal. To chosen signal GPIO input pin.  
+GND ---> To Ground pin.  
+VCC ---> To +3.3v pin.
 
 ### Detection time
 Currently, it is necessary to configure a maximum time period no filament movement was detected.   
